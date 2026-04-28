@@ -249,6 +249,73 @@ table.data-table tr:last-child td{border-bottom:none}
 .chart-card .chart-title{padding-bottom:10px;border-bottom:1px solid var(--border2);margin-bottom:16px}
 .pred-inputs .pred-input-group label{font-weight:500;letter-spacing:.2px}
 .predictor-grid>div:first-child{display:flex;flex-direction:column;gap:16px}
+
+/* ══ RESPONSIVE MOBILE-FIRST ════════════════════════════════════ */
+html{font-size:16px}
+body{font-size:.875rem}
+.main{margin-left:0;min-height:100dvh}
+.sidebar{
+  transform:translateX(-100%);
+  transition:transform .2s ease;
+  width:min(82vw,18rem);
+}
+.sidebar.open{transform:translateX(0)}
+.sidebar-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease;
+  z-index:95;
+}
+.sidebar-overlay.open{opacity:1;pointer-events:auto}
+.content{padding:1rem}
+.topbar{padding:.75rem 1rem;gap:.75rem;flex-wrap:wrap}
+.topbar-title{font-size:1rem}
+.topbar-right{width:100%;justify-content:flex-end}
+.mobile-menu-btn{
+  width:2.75rem;height:2.75rem;border-radius:.625rem;
+  border:1px solid var(--border);background:var(--bg2);color:var(--text);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:1.125rem;
+}
+.btn,.pg-btn,.filter-input,select.filter-input,.modal-close{min-height:2.75rem}
+.kpi-grid{grid-template-columns:1fr;gap:.75rem}
+.chart-grid{grid-template-columns:1fr;gap:.875rem}
+.chart-wrap{height:13rem}
+.filter-group,.filter-group.wide{min-width:100%;width:100%}
+.range-inputs{width:100%}
+.range-inputs .filter-input{flex:1}
+.pred-inputs{grid-template-columns:1fr}
+.props-grid{grid-template-columns:1fr}
+.frp-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.frp-tri-props{grid-template-columns:repeat(2,minmax(0,1fr))}
+.triangle-svg-box svg{max-width:100%;height:auto}
+.table-wrap{max-width:100%}
+
+@media (min-width:48rem){
+  .content{padding:1.25rem}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pred-inputs{grid-template-columns:1fr 1fr}
+  .props-grid{grid-template-columns:repeat(2,1fr)}
+  .frp-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media (min-width:64rem){
+  .sidebar{transform:translateX(0);width:13.75rem}
+  .mobile-menu-btn,.sidebar-overlay{display:none}
+  .main{margin-left:13.75rem}
+  .content{padding:1.5rem}
+  .topbar{padding:.75rem 1.5rem;flex-wrap:nowrap}
+  .topbar-right{width:auto}
+  .kpi-grid{grid-template-columns:repeat(auto-fill,minmax(11.25rem,1fr))}
+  .chart-grid{grid-template-columns:1fr 1fr}
+  .predictor-grid{grid-template-columns:1fr 1fr}
+  .props-grid{grid-template-columns:repeat(3,1fr)}
+  .frp-metrics{grid-template-columns:repeat(6,1fr)}
+  .frp-tri-props{grid-template-columns:repeat(4,1fr)}
+}
 </style>
 </head>
 <body>
@@ -272,6 +339,7 @@ table.data-table tr:last-child td{border-bottom:none}
 
 <main class="main">
   <div class="topbar">
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Abrir menú" onclick="toggleSidebar()">☰</button>
     <span class="topbar-title" id="topbar-title">Dashboard General</span>
     <div class="topbar-right"></div>
   </div>
@@ -458,6 +526,7 @@ table.data-table tr:last-child td{border-bottom:none}
 
   </div>
 </main>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
@@ -685,6 +754,17 @@ window.addEventListener('load', ()=>{ buildTriangle(document.getElementById('pre
 // ═══════════════════════════════════════════════
 let currentView='dashboard', currentPage=1, totalPages=1, filterTimer=null;
 const charts={};
+const MOBILE_BP=1024;
+
+function toggleSidebar(){
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
 
 function switchView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -693,6 +773,7 @@ function switchView(view){
   document.querySelector(`[data-view="${view}"]`).classList.add('active');
   document.getElementById('topbar-title').textContent={dashboard:'Dashboard General',data:'Base de Datos',predictor:'Predictor IA'}[view];
   currentView=view;
+  if(window.innerWidth<MOBILE_BP) closeSidebar();
   if(view==='data') loadData();
 }
 
